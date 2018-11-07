@@ -23,6 +23,10 @@ public class Main {
         Topoconfig topoconfig = new Topoconfig ();
         //topoconfig.readFile(args[1]);
         topoconfig.readFile ("topologia.txt");
+        topoconfig.setAddress("200.10.20.0/24");
+        topoconfig.calculateMasks();
+        topoconfig.calculateAddresses();
+        System.out.println (topoconfig.toString());
     }
     
 }

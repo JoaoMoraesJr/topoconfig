@@ -8,6 +8,7 @@ package topoconfig;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import static java.lang.Math.pow;
 import java.util.ArrayList;
 
 /**
@@ -18,6 +19,18 @@ public class Topoconfig {
     
     ArrayList <Network> netList = new ArrayList<Network>();
     String[][] routerMatrix;
+    int [] address;
+    int mask;
+    
+    public void setAddress (String adr) {
+        String splittedAddress[] = adr.split("/");
+        mask = Integer.parseInt(splittedAddress[1]);
+        String splittedAddress2[] = splittedAddress[0].split("\\.");
+        address = new int[4];
+        for (int i = 0; i < 4; i++) {
+            address[i] = Integer.parseInt(splittedAddress2[i]);
+        }
+    }
     
     public void readFile(String txtFile) {
         int index = 0;
@@ -54,7 +67,6 @@ public class Topoconfig {
         }catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println (toString());
     }
     
     public static int searchNetworkIndex (ArrayList<Network> netList, String netName){
@@ -65,10 +77,80 @@ public class Topoconfig {
         return -1;
     }
     
+    public boolean verifyAdresses (String address) {
+        int sumAdrNets = 0;
+        for (int i = 0; i<netList.size();i++) {
+            sumAdrNets += netList.get(i).nodes;
+        }
+        if (sumAdrNets > pow (2, mask)) return false;
+        return true;
+    }
+    
+    public void calculateMasks () {
+        for (int i = 0; i < netList.size(); i++) {
+            int nAddress = netList.get(i).nodes + 2; //rede e broadcast
+            int exp = 0;
+            while (pow(2, exp) < nAddress) {
+                exp++;
+            }
+            netList.get(i).mask = 32 - exp;
+        }
+        
+    }
+    
+    public int[] sumAddress (int[] numAddress, int sumToAddress) {
+        while (sumToAddress > 0) {
+            numAddress[3]++;
+            sumToAddress--;
+            for (int i = 3; i > -1; i--) {
+                if (numAddress[i] > 255) {
+                    numAddress[i] = 0;
+                    numAddress[i-1]++;
+                }
+            }
+        }
+        if (numAddress[3] > 255) System.out.println ("ERRO! Endereço ultrapassou limite: " + numAddress[0] +"."+ numAddress[1] +"."+ numAddress[2] +"."+ numAddress[3]);
+        return numAddress;
+    }
+    
+    public void calculateAddresses (){
+        calculateMasks();
+        int[] numAddress = address;
+        int actualMask = mask;
+        int addressesCalculated = 0;
+        while (addressesCalculated < netList.size()) {
+            int indexSmallestMask = 0;
+            for (int i = 0; i < netList.size(); i++) { //Search for first not calculated address.
+                if (netList.get(i).address == null) {
+                    indexSmallestMask = i;
+                    break;
+                }
+            }
+            System.out.println ("i" + indexSmallestMask + " " + netList.get(indexSmallestMask).addressToString());
+            for (int i = 0; i < netList.size(); i++) {
+                if (netList.get(i).address == null && (netList.get(i).mask < netList.get(indexSmallestMask).mask)) {
+                    indexSmallestMask = i;
+                }
+            }
+            while (actualMask > netList.get(indexSmallestMask).mask){
+                actualMask--;
+            }
+            netList.get(indexSmallestMask).address = numAddress;
+            int sumToAddress = (int) pow (2, 32 - actualMask);
+            numAddress = sumAddress (numAddress, sumToAddress);
+            
+            addressesCalculated++;
+            System.out.println (netList.get(indexSmallestMask).addressToString());
+        }
+        for (int i = 0; i< netList.size(); i++) {
+            System.out.println (numAddress[0] +"."+ numAddress[1] +"."+ numAddress[2] +"."+ numAddress[3]);
+        }
+    }
+    
     public String toString () {
         String s = "";
         for (int i = 0; i < netList.size(); i++) {
-            s += netList.get(i).name + " " + netList.get(i).nodes + "\n";
+            s += netList.get(i).name + " " + netList.get(i).nodes + " " + netList.get(i).addressToString() +"/" + netList.get(i).mask + "\n";
         }
         s += "\n";
         for (int i = 0; i < routerMatrix.length; i++) {
