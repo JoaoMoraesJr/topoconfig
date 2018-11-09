@@ -77,12 +77,12 @@ public class Topoconfig {
         return -1;
     }
     
-    public boolean verifyAdresses (String address) {
+    public boolean verifyAdresses () {
         int sumAdrNets = 0;
         for (int i = 0; i<netList.size();i++) {
             sumAdrNets += netList.get(i).nodes;
         }
-        if (sumAdrNets > pow (2, mask)) return false;
+        if (sumAdrNets > pow (2, (32-mask))) return false;
         return true;
     }
     
@@ -98,7 +98,8 @@ public class Topoconfig {
         
     }
     
-    public int[] sumAddress (int[] numAddress, int sumToAddress) {
+    public int[] sumAddress (int[] address, int sumToAddress) {
+        int[] numAddress = address.clone();
         while (sumToAddress > 0) {
             numAddress[3]++;
             sumToAddress--;
@@ -126,31 +127,38 @@ public class Topoconfig {
                     break;
                 }
             }
-            System.out.println ("i" + indexSmallestMask + " " + netList.get(indexSmallestMask).addressToString());
             for (int i = 0; i < netList.size(); i++) {
                 if (netList.get(i).address == null && (netList.get(i).mask < netList.get(indexSmallestMask).mask)) {
                     indexSmallestMask = i;
                 }
             }
-            while (actualMask > netList.get(indexSmallestMask).mask){
-                actualMask--;
+            while (netList.get(indexSmallestMask).mask > actualMask){
+                actualMask++;
             }
-            netList.get(indexSmallestMask).address = numAddress;
-            int sumToAddress = (int) pow (2, 32 - actualMask);
+            netList.get(indexSmallestMask).setAddress(numAddress);
+            int sumToAddress = (int) pow (2, 32 - (actualMask));
             numAddress = sumAddress (numAddress, sumToAddress);
-            
             addressesCalculated++;
-            System.out.println (netList.get(indexSmallestMask).addressToString());
         }
-        for (int i = 0; i< netList.size(); i++) {
-            System.out.println (numAddress[0] +"."+ numAddress[1] +"."+ numAddress[2] +"."+ numAddress[3]);
+    }
+    
+    public String addressToString (int[] address) {
+        String s = "";
+        if (address == null) return "null";
+        for (int i = 0; i < 3; i ++) {
+            s+= address[i] + ".";
         }
+        s+= address[3];
+        return s;
     }
     
     public String toString () {
         String s = "";
+        s+= "#NETWORK\n";
         for (int i = 0; i < netList.size(); i++) {
-            s += netList.get(i).name + " " + netList.get(i).nodes + " " + netList.get(i).addressToString() +"/" + netList.get(i).mask + "\n";
+            s += netList.get(i).name + ", " + netList.get(i).addressToString() +"/" + netList.get(i).mask + ", ";
+            s += addressToString(sumAddress(netList.get(i).address, 1)) + "-" + addressToString(sumAddress(netList.get(i).address, netList.get(i).nodes));
+            s += "\n";
         }
         s += "\n";
         for (int i = 0; i < routerMatrix.length; i++) {

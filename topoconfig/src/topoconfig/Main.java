@@ -22,11 +22,17 @@ public class Main {
     public static void main(String[] args) {
         Topoconfig topoconfig = new Topoconfig ();
         //topoconfig.readFile(args[1]);
-        topoconfig.readFile ("topologia.txt");
-        topoconfig.setAddress("200.10.20.0/24");
-        topoconfig.calculateMasks();
-        topoconfig.calculateAddresses();
-        System.out.println (topoconfig.toString());
+        //topoconfig.readFile ("topologia.txt");
+        //topoconfig.setAddress("200.10.20.0/24");
+        topoconfig.readFile ("topologia2.txt");
+        topoconfig.setAddress("192.168.0.0/23");
+        if (topoconfig.verifyAdresses()) {
+            topoconfig.calculateMasks();
+            topoconfig.calculateAddresses();
+            System.out.println (topoconfig.toString());
+        }else{
+            System.out.println ("Não há endereços suficientes para alocar");
+        }
     }
     
 }

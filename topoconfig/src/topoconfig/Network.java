@@ -22,6 +22,10 @@ public class Network {
         this.index = index;
     }
     
+    public void setAddress (int [] address) {
+        this.address = address.clone();
+    }
+    
     public String addressToString () {
         String s = "";
         if (address == null) return "null";
@@ -31,5 +35,4 @@ public class Network {
         s+= address[3];
         return s;
     }
-    
 }
