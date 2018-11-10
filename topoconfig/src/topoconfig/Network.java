@@ -15,11 +15,13 @@ public class Network {
     int index; //Position in connection matrix
     int[] address;
     int mask;
+    int connections;
     
     public Network (String name, int nodes, int index) {
         this.name = name;
         this.nodes = nodes;
         this.index = index;
+        connections = 0;
     }
     
     public void setAddress (int [] address) {
