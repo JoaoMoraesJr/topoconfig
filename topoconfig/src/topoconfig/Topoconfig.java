@@ -19,6 +19,7 @@ public class Topoconfig {
     
     ArrayList <Network> netList = new ArrayList<Network>();
     ArrayList <Router> routerList = new ArrayList<Router>();
+    ArrayList <String> routerTable = new ArrayList<String>();
     String[][] routerMatrix;
     int [] address;
     int mask;
@@ -120,19 +121,19 @@ public class Topoconfig {
     
     public void calculateAddresses (){
         calculateMasks();
-        int[] numAddress = address;
+        Address numAddress = (new Address (address));
         int actualMask = mask;
         int addressesCalculated = 0;
         while (addressesCalculated < netList.size()) {
             int indexSmallestMask = 0;
             for (int i = 0; i < netList.size(); i++) { //Search for first not calculated address.
-                if (netList.get(i).address == null) {
+                if (netList.get(i).isSetted == false) {
                     indexSmallestMask = i;
                     break;
                 }
             }
             for (int i = 0; i < netList.size(); i++) {
-                if (netList.get(i).address == null && (netList.get(i).mask < netList.get(indexSmallestMask).mask)) {
+                if (netList.get(i).isSetted == false && (netList.get(i).mask < netList.get(indexSmallestMask).mask)) {
                     indexSmallestMask = i;
                 }
             }
@@ -140,14 +141,21 @@ public class Topoconfig {
                 actualMask++;
             }
             netList.get(indexSmallestMask).setAddress(numAddress);
+            netList.get(indexSmallestMask).isSetted = true;
             int sumToAddress = (int) pow (2, 32 - (actualMask));
-            numAddress = sumAddress (numAddress, sumToAddress);
+            numAddress = numAddress.sumAddress(sumToAddress);
             addressesCalculated++;
         }
     }
     
     public void configureRouters () {
-        
+        for (int i = 0; i < routerList.size(); i++) {
+            for (int j = 0; j < routerList.get(i).connections; j++) {
+                int index = searchNetworkIndex(routerList.get(i).netNamesList.get(j));
+                routerList.get(i).netPortList.add(netList.get(index).address.sumAddress(netList.get(index).connections+1));
+                netList.get(index).connections++;
+            }
+        }
     }
     
     public String addressToString (int[] address) {
@@ -190,36 +198,11 @@ public class Topoconfig {
         return addr;
     }
     
-    public void cleanMarks () {
-        for (int i = 0; i < routerList.size(); i++) {
-            routerList.get(i).marked = false;
-        }
-    }
-    
-    public String toString () {
-        String s = "";
-        s+= "#NETWORK\n";
-        for (int i = 0; i < netList.size(); i++) {
-            s += netList.get(i).name + ", " + netList.get(i).addressToString() +"/" + netList.get(i).mask + ", ";
-            s += addressToString(sumAddress(netList.get(i).address, 1)) + "-" + addressToString(sumAddress(netList.get(i).address, netList.get(i).nodes));
-            s += "\n";
-        }
-        s+= "#ROUTER\n";
-        for (int i = 0; i < routerList.size(); i++) {
-            s += routerList.get(i).name + ", " + routerList.get(i).connections;
-            for (int j = 0; j < routerList.get(i).connections; j++) {
-                int index = searchNetworkIndex(routerList.get(i).netNamesList.get(j));
-                s+= ", " + addressToString(sumAddress(netList.get(index).address, netList.get(index).connections+1)) + "/" + netList.get(index).mask;
-                routerList.get(i).netPortList.add(sumAddress(netList.get(index).address, netList.get(index).connections+1));
-                netList.get(index).connections++;
-            }
-            s+= "\n";
-        }
-        s += "#ROUTERTABLE\n";
+/*    public void configureRouterTable() {
         for (int i = 0; i<routerList.size(); i++) {
             for (int j = 0; j < netList.size(); j++) {
                 s+= routerList.get(i).name + ", ";
-                s+= netList.get(j).addressToString() + "/" + netList.get(j).mask + ", ";
+                s+= netList.get(j).address.toString() + "/" + netList.get(j).mask + ", ";
                 boolean connectionExists = false;
                 int index = 0;
                 for (int k = 0; k < routerList.get(i).connections; k++) {
@@ -251,7 +234,74 @@ public class Topoconfig {
                                 sourceIndex = k;
                             }
                         }
-                        s+= addressToString(routerList.get(routerIndex).netPortList.get(ConnectionIndex));
+                        s+= routerList.get(routerIndex).netPortList.get(ConnectionIndex).toString();
+                        s+= ", " + sourceIndex;
+                        cleanMarks();
+                    }
+                }
+    }*/
+    
+    public void cleanMarks () {
+        for (int i = 0; i < routerList.size(); i++) {
+            routerList.get(i).marked = false;
+        }
+    }
+    
+    public String toString () {
+        String s = "";
+        s+= "#NETWORK\n";
+        for (int i = 0; i < netList.size(); i++) {
+            s += netList.get(i).name + ", " + netList.get(i).address.toString() +"/" + netList.get(i).mask + ", ";
+            s += netList.get(i).address.sumAddress(1).toString() + "-" + netList.get(i).address.sumAddress(netList.get(i).nodes).toString();
+            s += "\n";
+        }
+        s+= "#ROUTER\n";
+        for (int i = 0; i < routerList.size(); i++) {
+            s += routerList.get(i).name + ", " + routerList.get(i).connections;
+            for (int j = 0; j < routerList.get(i).connections; j++) {
+                int index = searchNetworkIndex(routerList.get(i).netNamesList.get(j));
+                s+= ", " + routerList.get(i).netPortList.get(j).toString() + "/" + netList.get(index).mask;
+
+            }
+            s+= "\n";
+        }
+        s += "#ROUTERTABLE\n";
+        for (int i = 0; i<routerList.size(); i++) {
+            for (int j = 0; j < netList.size(); j++) {
+                s+= routerList.get(i).name + ", ";
+                s+= netList.get(j).address.toString() + "/" + netList.get(j).mask + ", ";
+                boolean connectionExists = false;
+                int index = 0;
+                for (int k = 0; k < routerList.get(i).connections; k++) {
+                    if (routerList.get(i).netNamesList.get(k).equals(netList.get(j).name)) {
+                        connectionExists = true;
+                        index = k;
+                    }
+                }
+                if (connectionExists) s+= "0.0.0.0, " + index;
+                else {
+                    int ConnectionIndex = 0;
+                    String netName = searchConnection (routerList.get(i).name, netList.get(j).name);
+                    if (netName.equals(null)) {
+                        s += "not connected";
+                    }else{
+                        String[] netNameAux = netName.split(" ");
+                        int routerIndex = 0;
+                        int sourceIndex = 0;
+                        for (int k = 0; k < routerList.size(); k++) {
+                            if (routerList.get(k).name.equals(netNameAux[1])) routerIndex = k;
+                        }
+                        for (int k = 0; k < routerList.get(routerIndex).netNamesList.size(); k++) {
+                            if (routerList.get(routerIndex).netNamesList.get(k).equals(netNameAux[0])) {
+                                ConnectionIndex = k;
+                            }
+                        }
+                        for (int k = 0; k < routerList.get(i).netNamesList.size(); k++) {
+                            if (routerList.get(i).netNamesList.get(k).equals(netNameAux[0])) {
+                                sourceIndex = k;
+                            }
+                        }
+                        s+= routerList.get(routerIndex).netPortList.get(ConnectionIndex).toString();
                         s+= ", " + sourceIndex;
                         cleanMarks();
                     }

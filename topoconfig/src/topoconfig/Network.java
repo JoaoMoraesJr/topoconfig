@@ -13,9 +13,10 @@ public class Network {
     String name;
     int nodes;
     int index; //Position in connection matrix
-    int[] address;
+    Address address = new Address();
     int mask;
     int connections;
+    boolean isSetted = false;
     
     public Network (String name, int nodes, int index) {
         this.name = name;
@@ -24,17 +25,7 @@ public class Network {
         connections = 0;
     }
     
-    public void setAddress (int [] address) {
-        this.address = address.clone();
-    }
-    
-    public String addressToString () {
-        String s = "";
-        if (address == null) return "null";
-        for (int i = 0; i < 3; i ++) {
-            s+= address[i] + ".";
-        }
-        s+= address[3];
-        return s;
+    public void setAddress (Address address) {
+        this.address.setAddress(address.address);
     }
 }

@@ -16,7 +16,7 @@ public class Router {
     int connections;
     boolean marked = false;
     ArrayList<String> netNamesList = new ArrayList<String>();
-    ArrayList<int []> netPortList = new ArrayList<int []>();
+    ArrayList<Address> netPortList = new ArrayList<Address>();
     
     public Router (String name, int connections) {
         this.name = name;
