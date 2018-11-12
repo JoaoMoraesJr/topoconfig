@@ -37,6 +37,7 @@ public class Main {
             topoconfig.calculateMasks();
             topoconfig.calculateAddresses();
             topoconfig.configureRouters();
+            topoconfig.configureRouterTable();
             System.out.println (topoconfig.toString());
         }else{
             System.out.println ("Não há endereços suficientes para alocar");
