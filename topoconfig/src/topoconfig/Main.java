@@ -31,8 +31,12 @@ public class Main {
         //topoconfig.readFile(args[1]);
         //topoconfig.readFile ("topologia.txt");
         //topoconfig.setAddress("200.10.20.0/24");
-        topoconfig.readFile ("topologia2.txt");
-        topoconfig.setAddress("192.168.0.0/23");
+        //topoconfig.readFile ("topologia2.txt");
+        //topoconfig.setAddress("192.168.0.0/23");
+        //topoconfig.readFile("topologia3.txt");
+        //topoconfig.setAddress("10.0.0.0/22");
+        topoconfig.readFile(args[0]);
+        topoconfig.setAddress(args[1]);
         if (topoconfig.verifyAdresses()) {
             topoconfig.calculateMasks();
             topoconfig.calculateAddresses();

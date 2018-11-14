@@ -46,7 +46,7 @@ public class Topoconfig {
         while((line = file.readLine())!=null){
             if (line.contains("#NETWORK")) {    //CREATE NETWORKS
                 while (!(line = file.readLine()).contains("#ROUTER")) {
-                    if (!line.equals(" ")) {
+                    if (!line.equals("")) {
                         String lineSplitted[] = line.split(", ");
                         netList.add (new Network (lineSplitted[0], Integer.parseInt(lineSplitted[1]), index));
                         index++;
@@ -55,20 +55,22 @@ public class Topoconfig {
                 if (line.contains("#ROUTER")) {    //CREATE CONNECTION MATRIX
                     routerMatrix = new String[netList.size()][netList.size()];
                     while ((line = file.readLine())!=null) {
-                        String lineSplitted[] = line.split(", ");
-                        int num_connections = Integer.parseInt(lineSplitted[1]);
-                        Router router = new Router (lineSplitted[0], num_connections);
-                        for (int i = 0; i < num_connections; i++) {
-                            int indexi = searchNetworkIndex (lineSplitted[i+2]);
-                            router.netNamesList.add(lineSplitted[i+2]);
-                            for (int j = 0; j < num_connections; j++) {
-                                if (j != i) { //Don't compare same networks
-                                    int indexj = searchNetworkIndex (lineSplitted[j+2]);
-                                    routerMatrix[indexi][indexj] = lineSplitted[0];
+                        if (!line.equals("")) {
+                            String lineSplitted[] = line.split(", ");
+                            int num_connections = Integer.parseInt(lineSplitted[1]);
+                            Router router = new Router (lineSplitted[0], num_connections);
+                            for (int i = 0; i < num_connections; i++) {
+                                int indexi = searchNetworkIndex (lineSplitted[i+2]);
+                                router.netNamesList.add(lineSplitted[i+2]);
+                                for (int j = 0; j < num_connections; j++) {
+                                    if (j != i) { //Don't compare same networks
+                                        int indexj = searchNetworkIndex (lineSplitted[j+2]);
+                                        routerMatrix[indexi][indexj] = lineSplitted[0];
+                                    }
                                 }
                             }
+                            routerList.add(router);
                         }
-                        routerList.add(router);
                     }   
                 }
             }
