@@ -171,7 +171,6 @@ public class Topoconfig {
         for (int i = 0; i < routerList.size(); i++) {
             if (!routerList.get(i).marked) {
                 for (int j = routerList.get(index).netNamesList.size()-1; j > -1; j--) {
-                    //System.out.println ("will try " + );
                     for (int k = routerList.get(i).netNamesList.size()-1; k > -1; k--)
                     {
                         if (routerList.get(i).netNamesList.get(k).equals(routerList.get(index).netNamesList.get(j))){
@@ -184,6 +183,7 @@ public class Topoconfig {
         return addr;
     }
     
+    //Configure Router Table list
     public void configureRouterTable() {
         String s = "";
         for (int i = 0; i<routerList.size(); i++) {

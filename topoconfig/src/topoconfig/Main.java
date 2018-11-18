@@ -19,12 +19,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    
-    //DUVIDAS:
-    //1- Como configurar os endereços quando uma network está conectada a mais de um roteador?
-    //2- É importante fazer a RouterTable para o primeiro endereço?
-    //3- O que fazer quando a rede não possui nenhuma conexão?
-    
+   
     
     public static void main(String[] args) {
         Topoconfig topoconfig = new Topoconfig ();
